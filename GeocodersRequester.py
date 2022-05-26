@@ -1,5 +1,5 @@
 import requests
-from ApiKeys import HereApiKey, YandexApiKey
+from ApiKeys import HereApiKey, yandex_api_key_funk
 
 
 def here_geocoder(address):
@@ -13,17 +13,20 @@ def here_geocoder(address):
 
 
 def yandex_geocoder(address):
-    response = requests.get(
-        "https://geocode-maps.yandex.ru/1.x/",
-        params=dict(format="json", apikey=YandexApiKey, geocode=address, kind='house')
-    )
-    if response.status_code == 200:
-        data = response.json()["response"]
-        geom = f"POINT({data['GeoObjectCollection']['featureMember'][0]['point']['pos']})"
-        return geom
-    elif response.status_code == 403:
-        print('Invalid key')
-        return None
-    else:
-        print(f"status_code={response.status_code}, body={response.content}")
-        return None
+    yandex_api_key = yandex_api_key_funk()
+    key = next(yandex_api_key)
+    while True:
+        response = requests.get(
+            "https://geocode-maps.yandex.ru/1.x/",
+            params=dict(format="json", apikey=key, geocode=address, kind='house')
+        )
+        if response.status_code == 200:
+            data = response.json()["response"]
+            geom = f"POINT({data['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']})"
+            return geom
+        elif response.status_code == 403:
+            key = next(yandex_api_key)
+            print('Invalid key')
+        else:
+            print(f"status_code={response.status_code}, body={response.content}")
+            return None

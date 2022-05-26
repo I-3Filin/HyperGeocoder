@@ -18,6 +18,9 @@ while True:
             if YandexData is not None:
                 database_update(YandexData, i[1], cursor, connect)
                 print('coordinates found by YandexGeocoder')
+            elif YandexData is None:
+                print('ran out of ApiKeys')
+                break
             else:
                 print('coordinates not found')
 
